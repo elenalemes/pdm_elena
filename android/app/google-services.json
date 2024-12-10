@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "191923815250",
+    "project_id": "pdm-elena2024",
+    "storage_bucket": "pdm-elena2024.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:191923815250:android:756ea8bd4f3fb613a5308b",
+        "android_client_info": {
+          "package_name": "com.pdm_elena"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApmO9Tad304X7Ssv-jDN1RNmEvSxg_czA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
