@@ -1,22 +1,31 @@
 import {yupResolver} from '@hookform/resolvers/yup';
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Controller, useForm} from 'react-hook-form';
-import {Alert, Image, ScrollView, StyleSheet, View} from 'react-native';
-import {Button, Text, TextInput, useTheme} from 'react-native-paper';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import {AuthContext} from '../context/AuthProvider';
 import {Credencial} from '../model/types';
+import { CommonActions } from '@react-navigation/native';
+
+import {
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
+
+import {
+  Button,
+  Dialog,
+  Divider,
+  Text,
+  TextInput,
+  withTheme,
+} from 'react-native-paper';
+
 const requiredMessage = 'Campo obrigatório';
-/*
-  /^
-  (?=.*\d)              // deve conter ao menos um dígito
-  (?=.*[a-z])           // deve conter ao menos uma letra minúscula
-  (?=.*[A-Z])           // deve conter ao menos uma letra maiúscula
-  (?=.*[$*&@#])         // deve conter ao menos um caractere especial
-  [0-9a-zA-Z$*&@#]{8,}  // deve conter ao menos 8 dos caracteres mencionados
-$/
-*/
+
 const schema = yup
   .object()
   .shape({
@@ -33,13 +42,14 @@ const schema = yup
       ),
   })
   .required();
-export default function SignIn({navigation}: any) {
-  const theme = useTheme();
+
+function SignIn({navigation, theme}: any) {
   const {
     control,
     handleSubmit,
+    register,
     formState: {errors},
-  } = useForm<any>({
+  } = useForm<Credencial>({
     defaultValues: {
       email: '',
       senha: '',
@@ -47,19 +57,40 @@ export default function SignIn({navigation}: any) {
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   });
+  const [exibirSenha, setExibirSenha] = useState(true);
+  const [logando, setLogando] = useState(false);
+  const [dialogVisivel, setDialogVisivel] = useState(false);
+  const [mensagemErro, setMensagemErro] = useState('');
   const {signIn} = useContext<any>(AuthContext);
+
   useEffect(() => {
-    console.log('renderizou');
-  });
-  async function entrar(data: Credencial) {
+    if (dialogVisivel) {
+      setLogando(false);
+    }
+  }, [dialogVisivel]);
+
+  useEffect(() => {
+    register('email');
+    register('senha');
+  }, [register]);
+
+  async function onSubmit(data: Credencial) {
     console.log(JSON.stringify(data));
+    setLogando(true);
     const mensagem = await signIn(data);
     if (mensagem === 'ok') {
-      navigation.navigate('AppStack');
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{name: 'AppStack'}],
+        }),
+      );
     } else {
-      Alert.alert('Erro', mensagem);
+      setMensagemErro(mensagem);
+      setDialogVisivel(true);
     }
   }
+
   return (
     <SafeAreaView
       style={{
@@ -68,17 +99,25 @@ export default function SignIn({navigation}: any) {
       }}>
       <ScrollView>
         <>
-          <Image style={styles.image} source={require('../assets/logo512.png')} />
-          <Image style={styles.image} source={require('../assets/images/logo512.png')} />
+          <Image
+            style={styles.image}
+            source={require('../assets/images/imgview.png')}
+          />
+
           <Controller
             control={control}
+            rules={{
+              required: true,
+            }}
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
                 style={styles.textinput}
-                autoCapitalize="none"
-                mode="outlined"
                 label="Email"
                 placeholder="Digite seu email"
+                mode="outlined"
+                autoCapitalize="none"
+                returnKeyType="next"
+                keyboardType="email-address"
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
@@ -89,9 +128,11 @@ export default function SignIn({navigation}: any) {
           />
           {errors.email && (
             <Text style={{...styles.textError, color: theme.colors.error}}>
+              Este campo é obrigatório.
               {errors.email?.message?.toString()}
             </Text>
           )}
+
           <Controller
             control={control}
             rules={{
@@ -100,36 +141,83 @@ export default function SignIn({navigation}: any) {
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
                 style={styles.textinput}
-                autoCapitalize="none"
-                mode="outlined"
                 label="Senha"
                 placeholder="Digite sua senha"
-                secureTextEntry
+                mode="outlined"
+                autoCapitalize="none"
+                returnKeyType="go"
+                secureTextEntry={exibirSenha}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
-                right={<TextInput.Icon icon="eye" />}
+                right={
+                  <TextInput.Icon
+                    icon="eye"
+                    color={
+                      exibirSenha
+                        ? theme.colors.onBackground
+                        : theme.colors.error
+                    }
+                    onPress={() => setExibirSenha(previus => !previus)}
+                  />
+                }
               />
             )}
             name="senha"
           />
           {errors.senha && (
             <Text style={{...styles.textError, color: theme.colors.error}}>
+              Este campo é obrigatório.
               {errors.senha?.message?.toString()}
             </Text>
           )}
-          <Text style={styles.textEsqueceuSenha}>Esqueceu sua senha?</Text>
-          <Button style={styles.button} mode="contained" onPress={handleSubmit(entrar)}>
-            Entrar
+
+          <Text
+            style={{...styles.textEsqueceuSenha, color: theme.colors.tertiary}}
+            variant="labelMedium"
+            onPress={() =>
+              Alert.alert('Todo', 'ir para a tela esqueceu senha')
+            }>
+            Esqueceu sua senha?
+          </Text>
+
+          <Button
+            style={styles.button}
+            mode="contained"
+            onPress={handleSubmit(onSubmit)}
+            loading={logando}
+            disabled={logando}>
+            {!logando ? 'Entrar' : 'Entrando'}
           </Button>
+          <Divider />
           <View style={styles.divCadastro}>
-            <Text style={styles.textCadastro}>Cadastrar-se?</Text>
+            <Text variant="labelMedium">Não tem uma conta?</Text>
+            <Text
+              style={{...styles.textCadastro, color: theme.colors.tertiary}}
+              variant="labelMedium"
+              onPress={() => navigation.navigate('SignUp')}>
+              {' '}
+              Cadastre-se.
+            </Text>
           </View>
         </>
       </ScrollView>
+      <Dialog visible={dialogVisivel} onDismiss={() => setDialogVisivel(false)}>
+        <Dialog.Icon icon="alert-circle-outline" size={60} />
+        <Dialog.Title style={styles.textDialog}>Erro</Dialog.Title>
+        <Dialog.Content>
+          <Text style={styles.textDialog} variant="bodyLarge">
+            {mensagemErro}
+          </Text>
+        </Dialog.Content>
+      </Dialog>
     </SafeAreaView>
   );
 }
+
+export default withTheme(SignIn);
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -151,18 +239,22 @@ const styles = StyleSheet.create({
   },
   textEsqueceuSenha: {
     alignSelf: 'flex-end',
+    marginTop: 20,
+  },
+  button: {
+    marginTop: 20,
   },
   textCadastro: {},
   textError: {
     width: 350,
   },
-  button: {
-    marginTop: 50,
-    marginBottom: 30,
-  },
+
   divCadastro: {
     marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'center',
+  },
+  textDialog: {
+    textAlign: 'center',
   },
 });

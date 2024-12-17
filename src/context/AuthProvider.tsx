@@ -1,22 +1,15 @@
-import auth from '@react-native-firebase/auth';
-import React, {createContext} from 'react';
+import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import React, {createContext, useEffect, useState} from 'react';
+import firestore from '@react-native-firebase/firestore';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import {Credencial} from '../model/types';
-export const AuthContext = createContext({});
-export const AuthProvider = ({children}: any) => {
-  async function signIn(credencial: Credencial) {
-    console.log('Entrar', credencial);
-    try {
-      await auth().signInWithEmailAndPassword(credencial.email, credencial.senha);
-      return 'ok';
-    } catch (error) {
-      console.error(error);
-      return 'deu bug';
-      return launchServerMessageErro(error);
-    }
-  }
+import {Usuario} from '../model/usuario';
+import SingIn from '../telas/SingIn';
 
-  //função utilitária
-  function launchServerMessageErro(e: any): string {
+export const AuthContext = createContext({});
+
+   function launchServerMessageErro(e: any): string {
+    console.log(e);
     switch (e.code) {
       case 'auth/invalid-credential':
         return 'Email inexistente ou senha errada.';
@@ -35,5 +28,102 @@ export const AuthProvider = ({children}: any) => {
     }
   }
 
-  return <AuthContext.Provider value={{signIn}}>{children}</AuthContext.Provider>;
+  export const AuthProvider = ({children}: any) => {
+    const [userAuth, setUserAuth] = useState<FirebaseAuthTypes.User | null>(null); 
+
+  async function armazenaCredencialnaCache(
+    credencial: Credencial,
+  ): Promise<void> {
+    try {
+      await EncryptedStorage.setItem(
+        'credencial',
+        JSON.stringify({
+          email: credencial.email,
+          senha: credencial.senha,
+        }),
+      );
+    } catch (e) {
+      console.error('AuthProvider, storeCredencial: ' + e);
+    }
+  }
+
+
+  async function recuperaCredencialdaCache(): Promise<string | undefined> {
+    try {
+      const credencial = await EncryptedStorage.getItem('credencial');
+      return credencial !== null ? JSON.parse(credencial) : null;
+    } catch (e) {
+      console.error('AuthProvider, retrieveUserSession: ' + e);
+    }
+  }
+
+  async function signUp(usuario: Usuario): Promise<string> {
+    try {
+      await auth().createUserWithEmailAndPassword(usuario.email, usuario.senha);
+      await auth().currentUser?.sendEmailVerification();
+      const usuarioFirestore = {
+        email: usuario.email,
+        nome: usuario.nome,
+        urlFoto: usuario.urlFoto,
+      };
+      await firestore()
+        .collection('usuarios')
+        .doc(auth().currentUser?.uid)
+        .set(usuarioFirestore);
+      return 'ok';
+    } catch (e) {
+      return launchServerMessageErro(e);
+    }
+  }
+
+  async function signIn(credencial: Credencial): Promise<string> {
+    try { 
+      if (auth().currentUser?.emailVerified) {
+        return 'Você deve validar seu email para continuar.';
+      }
+      await auth().signInWithEmailAndPassword(
+        credencial.email,
+        credencial.senha,
+      );
+      await armazenaCredencialnaCache(credencial);
+      return 'ok';
+    } catch (e) {
+      return launchServerMessageErro(e);
+    }
+  }
+
+  async function signOut(): Promise<string> {
+    try {
+      setUserAuth({null});
+      await EncryptedStorage.removeItem('credencial');
+      if (auth().currentUser) {
+        await auth().signOut();
+      }
+      return 'ok';
+    } catch (e) {
+      return launchServerMessageErro(e);
+    }
+  }
+
+export const AuthProvider = ({children}: any) => {
+  async function signIn(credencial: Credencial) {
+    console.log('Entrar', credencial);
+    try {
+      await auth().signInWithEmailAndPassword(credencial.email, credencial.senha);
+      return 'ok';
+    } catch (error) {
+      console.error(error);
+      return 'deu bug';
+      return launchServerMessageErro(error);
+    }
+  }
+
+
+  return (
+    <<AuthContext.Provider
+    value={{userAuth, setUserAuth, signUp, signIn, signOut}}>
+    {children}
+  </AuthContext.Provider>
+  );
+
 };

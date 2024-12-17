@@ -1,61 +1,108 @@
-/* eslint-disable react/no-unstable-nested-components */
+import React from 'react';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React from 'react';
 import {StatusBar} from 'react-native';
-import {Icon, useTheme} from 'react-native-paper';
 import Home from '../telas/Home';
 import Preload from '../telas/Preload';
-import SignIn from '../telas/SignIn';
+import SingIn from '../telas/SingIn';
+import Perfil from '../telas/Perfil';
+import RecuperarSenha from '../telas/RecuperarSenha';
+import { Usuario } from '../model/usuario';
+import {
+  useTheme,
+  Icon
+} from 'react-native-paper';
+import SignUp from '../telas/SingUp';
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-function AuthStack() {
-  return (
-    <Stack.Navigator
-      initialRouteName="SignIn"
-      initialRouteName="Preload"
-      screenOptions={{
-        headerShown: false,
-      }}>
-      <Stack.Screen name="Preload" component={Preload} />
-      <Stack.Screen name="SignIn" component={SignIn} />
-    </Stack.Navigator>
-  );
-}
-function AppStack() {
+
+const AuthStack = () => (
+  <Stack.Navigator
+    initialRouteName="Preload"
+    screenOptions={{
+      headerShown: false,
+    }}>
+    <Stack.Screen component={Home} name="Home" />
+    <Stack.Screen component={Perfil} name="Perfil" />
+    <Stack.Screen component={Preload} name="Preload" />
+    <Stack.Screen component={RecuperarSenha} name="RecuperarSenha" />
+    <Stack.Screen component={SingIn} name="SignIn" />
+    <Stack.Screen component={SignUp} name="SignUp" />
+  </Stack.Navigator>
+);
+const ProfessorIcon = (props: { color: string }) => (
+  <Icon source="account-group" color={props.color} size={20} />
+);
+
+const MenuIcon = (props: { color: string }) => (
+  <Icon source="menu" color={props.color} size={20} />
+);
+
+const AppStack = () => {
   const theme = useTheme();
   return (
     <Tab.Navigator
-      initialRouteName="Home"
+      initialRouteName="Usuario"
       screenOptions={{
         headerShown: false,
       }}>
       <Tab.Screen
-        component={Home}
-        name="Home"
+        component={Usuario}
+        name="Professor"
         options={{
-          tabBarLabel: 'Home',
-          tabBarIcon: () => <Icon source="account-group" color={theme.colors.primary} size={20} />,
+          tabBarLabel: 'Professor',
+          tabBarIcon: ({ color }: { color: string }) => <ProfessorIcon color={color} />,
+        }}
+      />
+      <Tab.Screen
+        component={Perfil}
+        name="Perfil"
+        options={{
+          tabBarLabel: 'Perfil',
+          tabBarIcon: ({ color }: { color: string }) => <MenuIcon color={color} />,
         }}
       />
     </Tab.Navigator>
   );
-}
+};
+};
+
 export default function Navigator() {
   const theme = useTheme();
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      theme={{
+        colors: {
+          primary: theme.colors.primary,
+          background: theme.colors.background,
+          card: theme.colors.background,
+          text: theme.colors.primary,
+          border: theme.colors.primary,
+          notification: theme.colors.error,
+        },
+        dark: theme.dark,
+      }}>
       <StatusBar backgroundColor={theme.colors.primary} />
       <Stack.Navigator
         initialRouteName="AuthStack"
         screenOptions={{
           headerShown: false,
         }}>
-        <Stack.Screen name="AuthStack" component={AuthStack} />
-        <Stack.Screen name="AppStack" component={AppStack} />
+        <Stack.Screen component={AuthStack} name="AuthStack" />
+        <Stack.Screen component={AppStack} name="AppStack" />
+        <Stack.Screen
+          component={Perfil}
+          name="Professor"
+          options={{
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen component={Perfil} name="Perfil" />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
