@@ -1,18 +1,31 @@
-export class Usuario {
-  public email: string;
-  public nome: string;
-  public urlFoto: string;
-  public senha: string;
+import { Perfil } from './Perfil';
 
+export class Usuario {
+  public uid: string;
+  public nome: string;
+  public email: string;
+  public cpf: string;
+  public telefone: string;
+  public senha: string;
+  public perfil: Perfil;
+  public urlFoto: string;
   constructor(
-    email: string,
+    uid: string,
     nome: string,
-    urlFoto: string,
+    email: string,
+    cpf: string,
+    telefone: string,
     senha: string,
+    perfil: Perfil,
+    urlFoto: string
   ) {
-    this.email = email;
+    this.uid = uid;
     this.nome = nome;
-    this.urlFoto = urlFoto;
+    this.email = email;
+    this.cpf = cpf;
+    this.telefone = telefone;
     this.senha = senha;
+    this.perfil = perfil;
+    this.urlFoto = urlFoto;
   }
 }

@@ -1,19 +1,17 @@
-import React from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+
 import {NavigationContainer} from '@react-navigation/native';
-import {StatusBar} from 'react-native';
-import Home from '../telas/Home';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React from 'react';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {useTheme, Icon} from 'react-native-paper';
 import Preload from '../telas/Preload';
+import Menu from '../telas/Menu';
 import SingIn from '../telas/SingIn';
 import Perfil from '../telas/Perfil';
+import SingUp from '../telas/SingUp';
 import RecuperarSenha from '../telas/RecuperarSenha';
-import { Usuario } from '../model/usuario';
-import {
-  useTheme,
-  Icon
-} from 'react-native-paper';
-import SignUp from '../telas/SingUp';
+import Professor from '../telas/Professor';
+import { StatusBar } from 'react-native';
 
 
 const Stack = createNativeStackNavigator();
@@ -25,84 +23,68 @@ const AuthStack = () => (
     screenOptions={{
       headerShown: false,
     }}>
-    <Stack.Screen component={Home} name="Home" />
-    <Stack.Screen component={Perfil} name="Perfil" />
     <Stack.Screen component={Preload} name="Preload" />
-    <Stack.Screen component={RecuperarSenha} name="RecuperarSenha" />
     <Stack.Screen component={SingIn} name="SignIn" />
-    <Stack.Screen component={SignUp} name="SignUp" />
+    <Stack.Screen component={SingUp} name="SignUp" />
+    <Stack.Screen component={RecuperarSenha} name="RecuperarSenha" />
   </Stack.Navigator>
-);
-const ProfessorIcon = (props: { color: string }) => (
-  <Icon source="account-group" color={props.color} size={20} />
-);
-
-const MenuIcon = (props: { color: string }) => (
-  <Icon source="menu" color={props.color} size={20} />
 );
 
 const AppStack = () => {
   const theme = useTheme();
   return (
     <Tab.Navigator
-      initialRouteName="Usuario"
+      initialRouteName="Menu"
       screenOptions={{
         headerShown: false,
       }}>
       <Tab.Screen
-        component={Usuario}
+        component={Professor}
         name="Professor"
         options={{
           tabBarLabel: 'Professor',
-          tabBarIcon: ({ color }: { color: string }) => <ProfessorIcon color={color} />,
+          tabBarIcon: () => <Icon source="account-group" color={theme.colors.primary} size={20}/>,
         }}
       />
       <Tab.Screen
-        component={Perfil}
-        name="Perfil"
+        component={Menu}
+        name="Menu"
         options={{
-          tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color }: { color: string }) => <MenuIcon color={color} />,
+          tabBarLabel: 'Menu',
+          tabBarIcon: () => <Icon source="menu" color={theme.colors.primary} size={20} />,
         }}
       />
     </Tab.Navigator>
   );
 };
-};
 
 export default function Navigator() {
   const theme = useTheme();
+
   return (
-    <NavigationContainer
-      theme={{
-        colors: {
-          primary: theme.colors.primary,
-          background: theme.colors.background,
-          card: theme.colors.background,
-          text: theme.colors.primary,
-          border: theme.colors.primary,
-          notification: theme.colors.error,
-        },
-        dark: theme.dark,
-      }}>
-      <StatusBar backgroundColor={theme.colors.primary} />
-      <Stack.Navigator
-        initialRouteName="AuthStack"
-        screenOptions={{
-          headerShown: false,
-        }}>
-        <Stack.Screen component={AuthStack} name="AuthStack" />
-        <Stack.Screen component={AppStack} name="AppStack" />
-        <Stack.Screen
-          component={Perfil}
-          name="Professor"
-          options={{
-            presentation: 'modal',
-          }}
-        />
-        <Stack.Screen component={Perfil} name="Perfil" />
-      </Stack.Navigator>
+    <NavigationContainer>
+      <>
+        <StatusBar backgroundColor={theme.colors.primary} />
+        <Stack.Navigator
+          initialRouteName="AuthStack"
+          screenOptions={{
+            headerShown: false,
+          }}>
+
+          <Stack.Screen component={AuthStack} name="AuthStack" />
+          <Stack.Screen component={AppStack} name="AppStack" />
+          <Stack.Screen
+            component={Professor}
+            name="Professor"
+            options={{
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen component={Perfil} name="Perfil" />
+        </Stack.Navigator>
+      </>
     </NavigationContainer>
   );
 }
+
 

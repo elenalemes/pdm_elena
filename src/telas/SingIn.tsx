@@ -7,7 +7,6 @@ import {Credencial} from '../model/types';
 import { CommonActions } from '@react-navigation/native';
 
 import {
-  Alert,
   Image,
   SafeAreaView,
   ScrollView,
@@ -22,6 +21,7 @@ import {
   Text,
   TextInput,
   withTheme,
+  useTheme
 } from 'react-native-paper';
 
 const requiredMessage = 'Campo obrigatório';
@@ -43,20 +43,23 @@ const schema = yup
   })
   .required();
 
-function SignIn({navigation, theme}: any) {
+function SignIn({navigation}: any) {
+  const theme = useTheme();
   const {
     control,
     handleSubmit,
     register,
     formState: {errors},
-  } = useForm<Credencial>({
+  } = useForm<any>({
     defaultValues: {
       email: '',
       senha: '',
     },
     mode: 'onSubmit',
     resolver: yupResolver(schema),
+
   });
+
   const [exibirSenha, setExibirSenha] = useState(true);
   const [logando, setLogando] = useState(false);
   const [dialogVisivel, setDialogVisivel] = useState(false);
@@ -82,14 +85,14 @@ function SignIn({navigation, theme}: any) {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{name: 'AppStack'}],
+          routes: [{name: 'Preload'}],
         }),
       );
     } else {
       setMensagemErro(mensagem);
       setDialogVisivel(true);
     }
-  }
+}
 
   return (
     <SafeAreaView
@@ -100,15 +103,9 @@ function SignIn({navigation, theme}: any) {
       <ScrollView>
         <>
           <Image
-            style={styles.image}
-            source={require('../assets/images/imgview.png')}
-          />
-
+            style={styles.image}source={require('../assets/images/imgview.png')}/>
           <Controller
             control={control}
-            rules={{
-              required: true,
-            }}
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
                 style={styles.textinput}
@@ -153,11 +150,7 @@ function SignIn({navigation, theme}: any) {
                 right={
                   <TextInput.Icon
                     icon="eye"
-                    color={
-                      exibirSenha
-                        ? theme.colors.onBackground
-                        : theme.colors.error
-                    }
+                    color={exibirSenha ? theme.colors.onBackground : theme.colors.error}
                     onPress={() => setExibirSenha(previus => !previus)}
                   />
                 }
@@ -175,9 +168,7 @@ function SignIn({navigation, theme}: any) {
           <Text
             style={{...styles.textEsqueceuSenha, color: theme.colors.tertiary}}
             variant="labelMedium"
-            onPress={() =>
-              Alert.alert('Todo', 'ir para a tela esqueceu senha')
-            }>
+            onPress={() => navigation.navigate('RecuperarSenha')}>
             Esqueceu sua senha?
           </Text>
 
@@ -189,6 +180,7 @@ function SignIn({navigation, theme}: any) {
             disabled={logando}>
             {!logando ? 'Entrar' : 'Entrando'}
           </Button>
+
           <Divider />
           <View style={styles.divCadastro}>
             <Text variant="labelMedium">Não tem uma conta?</Text>
@@ -202,6 +194,7 @@ function SignIn({navigation, theme}: any) {
           </View>
         </>
       </ScrollView>
+
       <Dialog visible={dialogVisivel} onDismiss={() => setDialogVisivel(false)}>
         <Dialog.Icon icon="alert-circle-outline" size={60} />
         <Dialog.Title style={styles.textDialog}>Erro</Dialog.Title>

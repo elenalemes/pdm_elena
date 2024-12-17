@@ -8,9 +8,10 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import {AuthContext} from '../context/AuthProvider';
 import {UserContext} from '../context/UserProvider';
-import {Usuario} from '../model/usuario';
+import {Usuario} from '../model/Usuario';
 
 const requiredMessage = 'Campo obrigatório';
+
 const schema = yup
   .object()
   .shape({
@@ -35,7 +36,9 @@ const schema = yup
       .equals([yup.ref('senha')], 'As senhas não conferem'),
   })
   .required();
+
 export default function PerfilTela({navigation}: any) {
+  const {UserAuth} = useContext<any>(AuthContext);
   const theme = useTheme();
   const {
     control,
@@ -44,83 +47,66 @@ export default function PerfilTela({navigation}: any) {
     formState: {errors},
   } = useForm<any>({
     defaultValues: {
-      nome: '',
-      email: '',
-      senha: '',
-      confirmar_senha: '',
-      nome: 'Elena',
-      email: 'teste@email.com',
-      senha: 'Teste12*',
-      confirmar_senha: 'Teste12*',
+      nome: UserAuth.nome,
+      email: UserAuth.email,
+      perfil: UserAuth.perfil,
     },
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   });
-  const [exibirSenha, setExibirSenha] = useState(true);
   const [requisitando, setRequisitando] = useState(false);
   const [dialogErroVisivel, setDialogErroVisivel] = useState(false);
   const [dialogExcluirVisivel, setDialogExcluirVisivel] = useState(false);
   const [mensagem, setMensagem] = useState({tipo: '', mensagem: ''});
-  const {userAuth} = useContext<any>(AuthContext);
   const {update, del} = useContext<any>(UserContext);
-  //TODO: verificar se o usuário está logado e pegar o uid dele
+  const userAuth = UserAuth();
+
   useEffect(() => {
     register('nome');
     register('email');
-    register('senha');
-    register('confirmar_senha');
+    register('perfil');
   }, [register]);
 
-//   async function onSubmit(data: Usuario) {
-//     console.log('Atualizar perfil');
-//     setRequisitando(true);
-//     const msg = await update(data);
-//     if (msg === 'ok') {
-//     data.urlFoto =
-//       'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50';
-//     data.curso = Curso.CSTSI;
-//     data.perfil = Perfil.Aluno;
-//     //const msg = await update(data);
-//     if ('ok' === 'ok') {
-//       setMensagem({
-//         tipo: 'ok',
-//         mensagem:
-//           'Show! Seu perfil foi atualizado com sucesso. Verifique seu email para validar sua conta.',
-//       });
-//       setDialogErroVisivel(true);
-//       setRequisitando(false);
-//     } else {
-//       setMensagem({tipo: 'erro', mensagem: msg});
-//       setDialogErroVisivel(true);
-//       setRequisitando(false);
-//     }
-//   }
-
-  async function excluirConta(data: Usuario) {
-    console.log('Excluir conta');
-    setDialogExcluirVisivel(true); 
+  async function onSubmit(data: Usuario) {
+    console.log('Atualizar perfil');
     setRequisitando(true);
-    //const msg = await del(data.uid);
-    if ('ok' === 'ok') {
+    const msg = await update(data);
+    if (msg === 'ok') {
+      setMensagem({
+        tipo: 'ok',
+        mensagem: 'Perfil atualizado. Verifique seu e-mail para validar a conta.',
+      });
+      setDialogErroVisivel(true);
       setRequisitando(false);
+    } else {
+      setMensagem({tipo: 'erro', mensagem: msg});
+      setDialogErroVisivel(true);
+      setRequisitando(false);
+    }
+  }
+
+  function avisarDaExclusaoPermanenteDaConta() {
+    setDialogExcluirVisivel(true);
+  }
+
+  async function excluirConta() {
+    setDialogExcluirVisivel(false);
+    setRequisitando(true);
+    const msg = await del(userAuth.uid);
+    if (msg === 'ok') {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
           routes: [{name: 'AuthStack'}],
         }),
       );
-      // navigation.dispatch(
-      //   CommonActions.reset({
-      //     index: 0,
-      //     routes: [{name: 'AuthStack'}],
-      //   }),
-      // );
     } else {
       setMensagem({tipo: 'erro', mensagem: 'ops! algo deu errado'});
       setDialogErroVisivel(true);
       setRequisitando(false);
     }
   }
+
   return (
     <SafeAreaView
       style={{
@@ -131,7 +117,7 @@ export default function PerfilTela({navigation}: any) {
         <>
           <Image
             style={styles.image}
-            source={require('../assets/images/logo512.png')}
+            source={require('../assets/images/imgview.png')}
           />
           <View style={styles.divButtonsImage}>
             <Button
@@ -153,12 +139,13 @@ export default function PerfilTela({navigation}: any) {
               Foto
             </Button>
           </View>
+
           <Controller
             control={control}
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
                 style={styles.textinput}
-                label="Nome"
+                disabled
                 placeholder="Digite seu nome completo"
                 mode="outlined"
                 autoCapitalize="words"
@@ -176,6 +163,7 @@ export default function PerfilTela({navigation}: any) {
               {errors.nome?.message?.toString()}
             </Text>
           )}
+
           <Controller
             control={control}
             render={({field: {onChange, onBlur, value}}) => (
@@ -200,31 +188,26 @@ export default function PerfilTela({navigation}: any) {
               {errors.email?.message?.toString()}
             </Text>
           )}
+
           <Controller
             control={control}
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
-                style={styles.textinput}
-                label="Senha"
-                placeholder="Digite sua senha"
+              disabled
+              label="Curso ou Empresa"
+              placeholder="Clique para selecionar outro curso"
                 mode="outlined"
                 autoCapitalize="none"
                 returnKeyType="next"
-                secureTextEntry={exibirSenha}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
-                right={
-                  <TextInput.Icon
-                    icon="eye"
-                    onPress={() => setExibirSenha(previus => !previus)}
-                  />
-                }
+                right={<TextInput.Icon icon="domain" />}
               />
             )}
-            name="senha"
+            name="curso"
           />
-          {errors.senha && (
+          {errors.curso && (
             <Text style={{...styles.textError, color: theme.colors.error}}>
               {errors.senha?.message?.toString()}
             </Text>
@@ -234,28 +217,23 @@ export default function PerfilTela({navigation}: any) {
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
                 style={styles.textinput}
-                label="Confirmar senha"
-                placeholder="Confirme sua senha"
+                disabled
+                label="Perfil"
+                placeholder="Clique para selecionar outro perfil"
                 mode="outlined"
                 autoCapitalize="none"
                 returnKeyType="go"
-                secureTextEntry={exibirSenha}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
-                right={
-                  <TextInput.Icon
-                    icon="eye"
-                    onPress={() => setExibirSenha(previus => !previus)}
-                  />
-                }
+                right={<TextInput.Icon icon="account-eye" />}
               />
             )}
-            name="confirmar_senha"
+            name="perfil"
           />
-          {errors.confirmar_senha && (
+          {errors.perfil && (
             <Text style={{...styles.textError, color: theme.colors.error}}>
-              {errors.confirmar_senha?.message?.toString()}
+              {errors.perfil?.message?.toString()}
             </Text>
           )}
           <Button
@@ -269,7 +247,7 @@ export default function PerfilTela({navigation}: any) {
           <Button
             style={styles.buttonOthers}
             mode="outlined"
-            onPress={handleSubmit(excluirConta)}
+            onPress={handleSubmit(avisarDaExclusaoPermanenteDaConta)}
             loading={requisitando}
             disabled={requisitando}>
             {!requisitando ? 'Excluir' : 'Excluindo'}
@@ -291,8 +269,10 @@ export default function PerfilTela({navigation}: any) {
           </Text>
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={() => setDialogExcluirVisivel(false)}>Cancel</Button>
-          <Button onPress={() => console.log('Ok')}>Ok</Button>
+          <Button onPress={() => setDialogExcluirVisivel(false)}>
+            Cancelar
+          </Button>
+          <Button onPress={excluirConta}>Excluir</Button>
         </Dialog.Actions>
       </Dialog>
       <Dialog
