@@ -19,7 +19,7 @@ export default function Preload({navigation}: any) {
       if (authUser) {
         if (authUser.emailVerified) {
           console.log('email verificado');
-          await buscaUsuario();
+         await buscaUsuario();
         } else {
           console.log('email não verificado');
           setDialogVisivel(true);
@@ -37,8 +37,8 @@ export default function Preload({navigation}: any) {
   async function buscaUsuario() {
     const usuario = await getUser();
     if (usuario) {
-      console.log('Usuário não autenticado:', usuario);
-      setUserAuth(usuario);
+    console.log('Usuário não autenticado:', usuario);
+    setUserAuth(usuario);
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -46,7 +46,7 @@ export default function Preload({navigation}: any) {
 
         }),
       );
-    }
+   // }
   }
 
           async function logar() {

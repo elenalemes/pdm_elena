@@ -168,7 +168,7 @@ function SignIn({navigation}: any) {
           <Text
             style={{...styles.textEsqueceuSenha, color: theme.colors.tertiary}}
             variant="labelMedium"
-            onPress={() => navigation.navigate('RecuperarSenha')}>
+            onPress={() => navigation.navigate('EsqueceuSenha')}>
             Esqueceu sua senha?
           </Text>
 

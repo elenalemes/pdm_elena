@@ -1,5 +1,5 @@
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
-import React, {createContext, useEffect, useState} from 'react';
+import React, {createContext, useState} from 'react';
 import firestore from '@react-native-firebase/firestore';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {Credencial} from '../model/types';
@@ -28,6 +28,8 @@ export const AuthContext = createContext({});
   async function recuperaCredencialdaCache(): Promise<null | String> {
     try {
       const credencial = await EncryptedStorage.getItem('credencial');
+      console.log('recuperaCredencialdaCache');
+      console.log(credencial);
       return credencial !== null ? JSON.parse(credencial) : null;
     } catch (e) {
       console.error('AuthProvider, retrieveUserSession: ' + e);
@@ -74,6 +76,16 @@ export const AuthContext = createContext({});
     }
   }
 
+  async function recuperarSenha(email: string): Promise<string> {
+    try {
+      await auth().sendPasswordResetEmail(email);
+      return 'ok';
+    } catch (e) {
+      console.error(e);
+      return launchServerMessageErro(e);
+    }
+  }
+
   function launchServerMessageErro(e: any): string {
     console.log(e);
     switch (e.code) {
@@ -99,12 +111,12 @@ export const AuthContext = createContext({});
     <AuthContext.Provider
       value={{
         userAuth,
+        setUserAuth,
         signIn,
         signUp,
-        setUserAuth,
-        userAuth,
         signOut,
         recuperaCredencialdaCache,
+        recuperarSenha,
       }}>
       {children}
     </AuthContext.Provider>

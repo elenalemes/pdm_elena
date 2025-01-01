@@ -6,7 +6,7 @@ import {Controller, useForm} from 'react-hook-form';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import {AuthContext} from '../context/AuthProvider';
-import {Usuario} from '../model/Usuario';
+import {UsuarioAuth} from '../model/types';
 import {Perfil} from '../model/Perfil';
 
 const requiredMessage = 'Campo obrigatório';
@@ -47,7 +47,7 @@ export default function SignUp({navigation}: any) {
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   });
-
+  const [mensagemErro, setMensagemErro] = useState('');
   const [exibirSenha, setExibirSenha] = useState(true);
   const [requisitando, setRequisitando] = useState(false);
   const [dialogVisivel, setDialogVisivel] = useState(false);
@@ -61,227 +61,220 @@ export default function SignUp({navigation}: any) {
     register('senha');
     register('confirmar_senha');
   }, [register]);
-
-
-
-  async function onSubmit(data: Usuario) {
-    setRequisitando(true);
-    data.perfil = checked;
-    const msg = await signUp(data);
-    if (msg === 'ok') {
-      setMensagem({
-        tipo: 'ok',
-        mensagem:
-          'Show! Você foi cadastrado com sucesso. Verifique seu email para validar sua conta.',
-      });
+  async function onSubmit(data: UsuarioAuth) {
+    console.log(JSON.stringify(data));
+    if (data.senha !== data.confirmar_senha) {
+      setMensagemErro('As senhas não conferem');
       setDialogVisivel(true);
-      setRequisitando(false);
-    } else {
-      setMensagem({tipo: 'erro', mensagem: msg});
-      setDialogVisivel(true);
-      setRequisitando(false);
+      return;
     }
+    setCadastrando(true);
+    // const mensagem = await signIn(data);
+    // if (mensagem === 'ok') {
+    //   navigation.dispatch(
+    //     CommonActions.reset({
+    //       index: 0,
+    //       routes: [{name: 'AppStack'}],
+    //     }),
+    //   );
+    // } else {
+    //   setMensagemErro(mensagem);
+    //   setDialogVisivel(true);
+    // setLogando(true);
+    // }
   }
-    return (
-      <SafeAreaView style={{...styles.container, backgroundColor: theme.colors.background}}>
-        <ScrollView>
-          <>
-            <Image style={styles.image} source={require('../assets/images/imgview.png')} />
-  
-            <Controller
-              control={control}
-              render={({field: {onChange, onBlur, value}}) => (
-                <TextInput
-                  style={styles.textinput}
-                  label="Nome"
-                  placeholder="Digite seu nome completo"
-                  mode="outlined"
-                  autoCapitalize="words"
-                  returnKeyType="next"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  right={<TextInput.Icon icon="smart-card" />}
-                />
-              )}
-              name="nome"
-            />
-            {errors.email && (
-              <Text style={{...styles.textError, color: theme.colors.error}}>
-                {errors.nome?.message?.toString()}
-              </Text>
-            )}
-  
-            <Controller
-              control={control}
-              render={({field: {onChange, onBlur, value}}) => (
-                <TextInput
-                  style={styles.textinput}
-                  label="Email"
-                  placeholder="Digite seu email"
-                  mode="outlined"
-                  autoCapitalize="none"
-                  returnKeyType="next"
-                  keyboardType="email-address"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  right={<TextInput.Icon icon="email" />}
-                />
-              )}
-              name="email"
-            />
-            {errors.email && (
-              <Text style={{...styles.textError, color: theme.colors.error}}>
-                {errors.email?.message?.toString()}
-              </Text>
-            )}
-  
-            <Controller
-              control={control}
-              render={({field: {onChange, onBlur, value}}) => (
-                <TextInput
-                  style={styles.textinput}
-                  label="Senha"
-                  placeholder="Digite sua senha"
-                  mode="outlined"
-                  autoCapitalize="none"
-                  returnKeyType="next"
-                  secureTextEntry={exibirSenha}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  right={
-                    <TextInput.Icon icon="eye" onPress={() => setExibirSenha(previus => !previus)} />
-                  }
-                />
-              )}
-              name="senha"
-            />
-            {errors.senha && (
-              <Text style={{...styles.textError, color: theme.colors.error}}>
-                {errors.senha?.message?.toString()}
-              </Text>
-            )}
-            <Controller
-              control={control}
-              render={({field: {onChange, onBlur, value}}) => (
-                <TextInput
-                  style={styles.textinput}
-                  label="Confirmar senha"
-                  placeholder="Confirme sua senha"
-                  mode="outlined"
-                  autoCapitalize="none"
-                  returnKeyType="go"
-                  secureTextEntry={exibirSenha}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  right={
-                    <TextInput.Icon icon="eye" onPress={() => setExibirSenha(previus => !previus)} />
-                  }
-                />
-              )}
-              name="confirmar_senha"
-            />
-            {errors.confirmar_senha && (
-              <Text style={{...styles.textError, color: theme.colors.error}}>
-                {errors.confirmar_senha?.message?.toString()}
-              </Text>
-            )}
-  
-            <View style={styles.divradiobutton}>
-            <RadioButton
-              value={Perfil.Professor}
-              status={checked === Perfil.Professor ? 'checked' : 'unchecked'}
-              onPress={() => setChecked(Perfil.Professor)}
-            />
-            <Text>Entrar como Professor</Text>
-          </View>
-  
-            <Button
-              style={styles.button}
-              mode="contained"
-              onPress={handleSubmit(onSubmit)}
-              loading={requisitando}
-              disabled={requisitando}>
-              {!requisitando ? 'Cadastrar' : 'Cadastrando'}
-            </Button>
-          </>
-        </ScrollView>
-        <Dialog
-          visible={dialogVisivel}
-          onDismiss={() => {
-            setDialogVisivel(false);
-            if (mensagem.tipo === 'ok') {
-              navigation.goBack();
-            }
-          }}>
-          <Dialog.Icon
-            icon={mensagem.tipo === 'ok' ? 'checkbox-marked-circle-outline' : 'alert-circle-outline'}
-            size={60}
+  <SafeAreaView
+      style={{
+        ...styles.container,
+        backgroundColor: theme.colors.background,
+      }}>
+      <ScrollView>
+        <>
+          <Image
+            style={styles.image}
+            source={require('../assets/images/logo512.png')}
           />
-          <Dialog.Title style={styles.textDialog}>
-            {mensagem.tipo === 'ok' ? 'Informação' : 'Erro'}
-          </Dialog.Title>
-          <Dialog.Content>
-            <Text style={styles.textDialog} variant="bodyLarge">
-              {mensagem.mensagem}
+          <View style={styles.divButtonsImage}>
+            <Button
+              style={styles.buttonImage}
+              mode="outlined"
+              icon="image"
+              onPress={() => Alert.alert('Vamos ver isso em upload de imagens')}
+              loading={abrindo}>
+              Galeria
+            </Button>
+            <Button
+              style={styles.buttonImage}
+              mode="outlined"
+              icon="camera"
+              onPress={() => Alert.alert('Vamos ver isso em upload de imagens')}
+              loading={abrindo}>
+              Foto
+            </Button>
+          </View>
+          <Controller
+            control={control}
+            render={({field: {onChange, onBlur, value}}) => (
+              <TextInput
+                style={styles.textinput}
+                label="Nome"
+                placeholder="Digite seu nome completo"
+                mode="outlined"
+                autoCapitalize="words"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                right={<TextInput.Icon icon="smart-card" />}
+              />
+            )}
+            name="nome"
+          />
+          {errors.email && (
+            <Text style={{...styles.textError, color: theme.colors.error}}>
+              {errors.nome?.message?.toString()}
             </Text>
-          </Dialog.Content>
-        </Dialog>
-      </SafeAreaView>
-    );
-  }
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    image: {
-      width: 200,
-      height: 200,
-      alignSelf: 'center',
-      borderRadius: 200 / 2,
-      marginTop: 50,
-    },
-    textinput: {
-      width: 350,
-      height: 50,
-      marginTop: 20,
-      backgroundColor: 'transparent',
-    },
-    textEsqueceuSenha: {
-      alignSelf: 'flex-end',
-      marginTop: 20,
-    },
-    textCadastro: {},
-    textError: {
-      width: 350,
-    },
-    button: {
-      marginTop: 50,
-      marginBottom: 30,
-    },
-    divButtonsImage: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      marginTop: 15,
-      marginBottom: 20,
-    },
-    buttonImage: {
-      width: 180,
-    },
-    textDialog: {
-      textAlign: 'center',
-    },
-  
-    divradiobutton: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      marginTop: 15,
-      marginBottom: 20,
-      alignItems: 'center',
-    },
-  });
+          )}
+          <Controller
+            control={control}
+            render={({field: {onChange, onBlur, value}}) => (
+              <TextInput
+                style={styles.textinput}
+                label="Email"
+                placeholder="Digite seu email"
+                mode="outlined"
+                autoCapitalize="none"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                right={<TextInput.Icon icon="email" />}
+              />
+            )}
+            name="email"
+          />
+          {errors.email && (
+            <Text style={{...styles.textError, color: theme.colors.error}}>
+              {errors.email?.message?.toString()}
+            </Text>
+          )}
+          <Controller
+            control={control}
+            render={({field: {onChange, onBlur, value}}) => (
+              <TextInput
+                style={styles.textinput}
+                label="Senha"
+                placeholder="Digite sua senha"
+                mode="outlined"
+                autoCapitalize="none"
+                secureTextEntry={exibirSenha}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                right={
+                  <TextInput.Icon
+                    icon="eye"
+                    onPress={() => setExibirSenha(previus => !previus)}
+                  />
+                }
+              />
+            )}
+            name="senha"
+          />
+          {errors.senha && (
+            <Text style={{...styles.textError, color: theme.colors.error}}>
+              {errors.senha?.message?.toString()}
+            </Text>
+          )}
+          <Controller
+            control={control}
+            render={({field: {onChange, onBlur, value}}) => (
+              <TextInput
+                style={styles.textinput}
+                label="Confirmar senha"
+                placeholder="Confirme sua senha"
+                mode="outlined"
+                autoCapitalize="none"
+                secureTextEntry={exibirSenha}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                right={
+                  <TextInput.Icon
+                    icon="eye"
+                    onPress={() => setExibirSenha(previus => !previus)}
+                  />
+                }
+              />
+            )}
+            name="confirmar_senha"
+          />
+          {errors.confirmar_senha && (
+            <Text style={{...styles.textError, color: theme.colors.error}}>
+              {errors.confirmar_senha?.message?.toString()}
+            </Text>
+          )}
+          <Button
+            style={styles.button}
+            mode="contained"
+            onPress={handleSubmit(onSubmit)}
+            loading={cadastrando}
+            disabled={cadastrando}>
+            {!cadastrando ? 'Cadastrar' : 'Cadastrando'}
+          </Button>
+        </>
+      </ScrollView>
+      <Dialog visible={dialogVisivel} onDismiss={() => setDialogVisivel(false)}>
+        <Dialog.Icon icon="alert-circle-outline" size={60} />
+        <Dialog.Title style={styles.textDialog}>Erro</Dialog.Title>
+        <Dialog.Content>
+          <Text style={styles.textDialog} variant="bodyLarge">
+            {mensagemErro}
+          </Text>
+        </Dialog.Content>
+      </Dialog>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  image: {
+    width: 200,
+    height: 200,
+    alignSelf: 'center',
+    borderRadius: 200 / 2,
+    marginTop: 50,
+  },
+  textinput: {
+    width: 350,
+    height: 50,
+    marginTop: 20,
+    backgroundColor: 'transparent',
+  },
+  textEsqueceuSenha: {
+    alignSelf: 'flex-end',
+    marginTop: 20,
+  },
+  textCadastro: {},
+  textError: {
+    width: 350,
+  },
+  button: {
+    marginTop: 50,
+    marginBottom: 30,
+  },
+  divButtonsImage: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 15,
+    marginBottom: 20,
+  },
+  buttonImage: {
+    width: 180,
+  },
+  textDialog: {
+    textAlign: 'center',
+  },
+});

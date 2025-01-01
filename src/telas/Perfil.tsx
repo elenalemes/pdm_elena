@@ -193,29 +193,6 @@ export default function PerfilTela({navigation}: any) {
             control={control}
             render={({field: {onChange, onBlur, value}}) => (
               <TextInput
-              disabled
-              label="Curso ou Empresa"
-              placeholder="Clique para selecionar outro curso"
-                mode="outlined"
-                autoCapitalize="none"
-                returnKeyType="next"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                right={<TextInput.Icon icon="domain" />}
-              />
-            )}
-            name="curso"
-          />
-          {errors.curso && (
-            <Text style={{...styles.textError, color: theme.colors.error}}>
-              {errors.senha?.message?.toString()}
-            </Text>
-          )}
-          <Controller
-            control={control}
-            render={({field: {onChange, onBlur, value}}) => (
-              <TextInput
                 style={styles.textinput}
                 disabled
                 label="Perfil"

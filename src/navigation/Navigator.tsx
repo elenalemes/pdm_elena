@@ -9,7 +9,7 @@ import Menu from '../telas/Menu';
 import SingIn from '../telas/SingIn';
 import Perfil from '../telas/Perfil';
 import SingUp from '../telas/SingUp';
-import RecuperarSenha from '../telas/RecuperarSenha';
+import EsqueceuSenha from '../telas/EsqueceuSenha';
 import Professor from '../telas/Professor';
 import { StatusBar } from 'react-native';
 
@@ -26,7 +26,7 @@ const AuthStack = () => (
     <Stack.Screen component={Preload} name="Preload" />
     <Stack.Screen component={SingIn} name="SignIn" />
     <Stack.Screen component={SingUp} name="SignUp" />
-    <Stack.Screen component={RecuperarSenha} name="RecuperarSenha" />
+    <Stack.Screen component={EsqueceuSenha} name="EsqueceuSenha" />
   </Stack.Navigator>
 );
 
@@ -34,7 +34,7 @@ const AppStack = () => {
   const theme = useTheme();
   return (
     <Tab.Navigator
-      initialRouteName="Menu"
+      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
       }}>
