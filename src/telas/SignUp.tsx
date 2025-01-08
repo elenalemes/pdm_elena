@@ -1,13 +1,14 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, View, Alert, Image, ScrollView} from 'react-native';
-import {Text, Button, Dialog, TextInput, useTheme, RadioButton} from 'react-native-paper';
-import {yupResolver} from '@hookform/resolvers/yup';
-import {Controller, useForm} from 'react-hook-form';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import React, { useContext, useEffect, useState } from 'react';
+import { StyleSheet, View, Image, ScrollView } from 'react-native';
+import { Text, Button, Dialog, TextInput, useTheme } from 'react-native-paper';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Controller, useForm } from 'react-hook-form';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
-import {AuthContext} from '../context/AuthProvider';
-import {UsuarioAuth} from '../model/types';
-import {Perfil} from '../model/Perfil';
+import { UserContext } from '../context/UserProvider';
+import { AuthContext } from '../context/AuthProvider';
+import { UsuarioAuth } from '../model/types';
+import { ImageLibraryOptions, launchCamera, launchImageLibrary } from 'react-native-image-picker';
 
 const requiredMessage = 'Campo obrigatório';
 
@@ -26,17 +27,17 @@ const schema = yup
     confirmar_senha: yup
       .string()
       .required(requiredMessage)
-      .equals([yup.ref('senha')], 'As senhas não conferem'),
+      .oneOf([yup.ref('senha')], 'As senhas não conferem'),
   })
   .required();
 
-export default function SignUp({navigation}: any) {
+export default function SignUp({ navigation }: any) {
   const theme = useTheme();
   const {
     control,
     handleSubmit,
     register,
-    formState: {errors},
+    formState: { errors },
   } = useForm<any>({
     defaultValues: {
       nome: '',
@@ -49,11 +50,13 @@ export default function SignUp({navigation}: any) {
   });
   const [mensagemErro, setMensagemErro] = useState('');
   const [exibirSenha, setExibirSenha] = useState(true);
-  const [requisitando, setRequisitando] = useState(false);
+  const [cadastrando, setCadastrando] = useState(false);
   const [dialogVisivel, setDialogVisivel] = useState(false);
-  const [mensagem, setMensagem] = useState({tipo: '', mensagem: ''});
-  const {signUp} = useContext<any>(AuthContext);
-  const [checked, setChecked] = React.useState<Perfil>(Perfil.Professor);
+  const [urlDevice, setUrlDevice] = useState<string | null>(null);
+  const { signUp } = useContext<any>(AuthContext);
+  const { sendImageToStorage } = useContext<any>(UserContext);
+
+
 
   useEffect(() => {
     register('nome');
@@ -61,6 +64,7 @@ export default function SignUp({navigation}: any) {
     register('senha');
     register('confirmar_senha');
   }, [register]);
+
   async function onSubmit(data: UsuarioAuth) {
     console.log(JSON.stringify(data));
     if (data.senha !== data.confirmar_senha) {
@@ -68,53 +72,106 @@ export default function SignUp({navigation}: any) {
       setDialogVisivel(true);
       return;
     }
+
     setCadastrando(true);
-    // const mensagem = await signIn(data);
-    // if (mensagem === 'ok') {
-    //   navigation.dispatch(
-    //     CommonActions.reset({
-    //       index: 0,
-    //       routes: [{name: 'AppStack'}],
-    //     }),
-    //   );
-    // } else {
-    //   setMensagemErro(mensagem);
-    //   setDialogVisivel(true);
-    // setLogando(true);
-    // }
+    const mensagem = await signUp(data);
+    if (mensagem === 'ok') {
+      if (urlDevice) {
+        const imageUrl = await sendImageToStorage(data, urlDevice);
+        console.log('Image URL:', imageUrl);
+      }
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'AppStack' }],
+        })
+      );
+    } else {
+      setMensagemErro(mensagem);
+      setDialogVisivel(true);
+      setCadastrando(false);
+    }
   }
-  <SafeAreaView
+
+  const buscaNaGaleria = () => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+    };
+    launchImageLibrary(options, response => {
+      if (response.errorCode) {
+        setMensagemErro('Ops! Erro ao buscar a imagem.');
+        setDialogVisivel(true);
+      } else if (response.didCancel) {
+        setMensagemErro('Ok, você cancelou.');
+        setDialogVisivel(true);
+      } else {
+        const path = response.assets?.[0].uri;
+        console.log('buscaNaGaleria');
+        console.log(path);
+        setUrlDevice(path);
+      }
+    });
+  };
+
+  const tiraFoto = () => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+    };
+    launchCamera(options, response => {
+      if (response.errorCode) {
+        setMensagemErro('Ops! Erro ao tirar a foto');
+        setDialogVisivel(true);
+      } else if (response.didCancel) {
+        setMensagemErro('Ok, você cancelou.');
+        setDialogVisivel(true);
+      } else {
+        const path = response.assets?.[0].uri;
+        console.log('tiraFoto');
+        console.log(path);
+        setUrlDevice(path);
+      }
+    });
+  };
+
+  return (
+    <SafeAreaView
       style={{
         ...styles.container,
         backgroundColor: theme.colors.background,
-      }}>
+      }}
+    >
       <ScrollView>
         <>
           <Image
             style={styles.image}
-            source={require('../assets/images/logo512.png')}
+            source={
+              urlDevice !== ''
+                ? { uri: urlDevice }
+                : require('../assets/images/fotoelena.png')
+            }
+            loadingIndicatorSource={require('../assets/images/fotoelena.png')}
           />
           <View style={styles.divButtonsImage}>
             <Button
               style={styles.buttonImage}
               mode="outlined"
               icon="image"
-              onPress={() => Alert.alert('Vamos ver isso em upload de imagens')}
-              loading={abrindo}>
+              onPress={buscaNaGaleria}
+            >
               Galeria
             </Button>
             <Button
               style={styles.buttonImage}
               mode="outlined"
               icon="camera"
-              onPress={() => Alert.alert('Vamos ver isso em upload de imagens')}
-              loading={abrindo}>
+              onPress={tiraFoto}
+            >
               Foto
             </Button>
           </View>
           <Controller
             control={control}
-            render={({field: {onChange, onBlur, value}}) => (
+            render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={styles.textinput}
                 label="Nome"
@@ -129,14 +186,14 @@ export default function SignUp({navigation}: any) {
             )}
             name="nome"
           />
-          {errors.email && (
-            <Text style={{...styles.textError, color: theme.colors.error}}>
+          {errors.nome && (
+            <Text style={{ ...styles.textError, color: theme.colors.error }}>
               {errors.nome?.message?.toString()}
             </Text>
           )}
           <Controller
             control={control}
-            render={({field: {onChange, onBlur, value}}) => (
+            render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={styles.textinput}
                 label="Email"
@@ -152,13 +209,13 @@ export default function SignUp({navigation}: any) {
             name="email"
           />
           {errors.email && (
-            <Text style={{...styles.textError, color: theme.colors.error}}>
+            <Text style={{ ...styles.textError, color: theme.colors.error }}>
               {errors.email?.message?.toString()}
             </Text>
           )}
           <Controller
             control={control}
-            render={({field: {onChange, onBlur, value}}) => (
+            render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={styles.textinput}
                 label="Senha"
@@ -180,13 +237,13 @@ export default function SignUp({navigation}: any) {
             name="senha"
           />
           {errors.senha && (
-            <Text style={{...styles.textError, color: theme.colors.error}}>
+            <Text style={{ ...styles.textError, color: theme.colors.error }}>
               {errors.senha?.message?.toString()}
             </Text>
           )}
           <Controller
             control={control}
-            render={({field: {onChange, onBlur, value}}) => (
+            render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 style={styles.textinput}
                 label="Confirmar senha"
@@ -208,7 +265,7 @@ export default function SignUp({navigation}: any) {
             name="confirmar_senha"
           />
           {errors.confirmar_senha && (
-            <Text style={{...styles.textError, color: theme.colors.error}}>
+            <Text style={{ ...styles.textError, color: theme.colors.error }}>
               {errors.confirmar_senha?.message?.toString()}
             </Text>
           )}
@@ -217,7 +274,8 @@ export default function SignUp({navigation}: any) {
             mode="contained"
             onPress={handleSubmit(onSubmit)}
             loading={cadastrando}
-            disabled={cadastrando}>
+            disabled={cadastrando}
+          >
             {!cadastrando ? 'Cadastrar' : 'Cadastrando'}
           </Button>
         </>

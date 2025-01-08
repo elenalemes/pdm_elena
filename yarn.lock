@@ -1069,6 +1069,11 @@
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
 
+"@bam.tech/react-native-image-resizer@^3.0.11":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@bam.tech/react-native-image-resizer/-/react-native-image-resizer-3.0.11.tgz#b9dc0f155b1293fe6d04944e45b6e3252ca2dea3"
+  integrity sha512-J/vAe51uPhJafT0uAIQI3gziqVs4Tnw32bHau/+I7AukSs4YxLXIaOVF6EChZ9ZFu+fLxvVrRTbHKDf+1YoXag==
+
 "@bcoe/v8-coverage@^0.2.3":
   version "0.2.3"
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
@@ -2077,10 +2082,10 @@
   resolved "https://registry.npmjs.org/@react-native-firebase/firestore/-/firestore-21.6.0.tgz"
   integrity sha512-R0H9ZcNT+TESF8d3LpKMHoqoK1FoOEgUWhIfmr+Ji/gk0AgzOBE9k74YsxQ4vIHYQSMMDxbFuxEpXgh972M9eA==
 
-"@react-native-firebase/storage@^21.6.1":
-  version "21.6.1"
-  resolved "https://registry.yarnpkg.com/@react-native-firebase/storage/-/storage-21.6.1.tgz#8d3ffc7d786302d611fbe15a6e7617c74f55b7f0"
-  integrity sha512-97PsRf1i+0TdQgbLV0WD/HDB+3cae7JWimqc8eTGVc+QK2OuooYgs34flnbDkXu71brzDWdGJRWijsZhtORggg==
+"@react-native-firebase/storage@21.6.0":
+  version "21.6.0"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/storage/-/storage-21.6.0.tgz#d2fa3cda3f1ac70310f4088de1ff8cace2b78787"
+  integrity sha512-DBIBwwU6onXSIu4/fmbsdfbxkoSS4lPRALi90jOkp4geZ1B9N76A0OphDin2KXvoxGAdFEzDtsIPb1plK+PFpQ==
 
 "@react-native/assets-registry@0.75.4":
   version "0.75.4"
@@ -6239,6 +6244,11 @@ react-native-encrypted-storage@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/react-native-encrypted-storage/-/react-native-encrypted-storage-4.0.3.tgz#2a4d65459870511e8f4ccd22f02433dab7fa5e91"
   integrity sha512-0pJA4Aj2S1PIJEbU7pN/Qvf7JIJx3hFywx+i+bLHtgK0/6Zryf1V2xVsWcrD50dfiu3jY1eN2gesQ5osGxE7jA==
+
+react-native-image-picker@^7.2.3:
+  version "7.2.3"
+  resolved "https://registry.yarnpkg.com/react-native-image-picker/-/react-native-image-picker-7.2.3.tgz#9c402591462af256cdd9aed796c28083a48f90cd"
+  integrity sha512-zKIZUlQNU3EtqizsXSH92zPeve4vpUrsqHu2kkpCxWE9TZhJFZBb+irDsBOY8J21k0+Edgt06TMQGJ+iPUIXyA==
 
 react-native-paper@^5.12.5:
   version "5.12.5"

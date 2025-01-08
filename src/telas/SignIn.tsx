@@ -85,7 +85,7 @@ function SignIn({navigation}: any) {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{name: 'Preload'}],
+          routes: [{name: 'AppStack'}],
         }),
       );
     } else {
@@ -103,7 +103,8 @@ function SignIn({navigation}: any) {
       <ScrollView>
         <>
           <Image
-            style={styles.image}source={require('../assets/images/imgview.png')}/>
+           style={styles.image}source={require('../assets/images/imgview.png')}
+            />
           <Controller
             control={control}
             render={({field: {onChange, onBlur, value}}) => (

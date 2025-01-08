@@ -2,13 +2,14 @@ import {yupResolver} from '@hookform/resolvers/yup';
 import {CommonActions} from '@react-navigation/native';
 import React, {useContext, useEffect, useState} from 'react';
 import {Controller, useForm} from 'react-hook-form';
-import {Alert, Image, ScrollView, StyleSheet, View} from 'react-native';
+import {Image, ScrollView, StyleSheet, View} from 'react-native';
 import {Button, Dialog, Text, TextInput, useTheme} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import {AuthContext} from '../context/AuthProvider';
 import {UserContext} from '../context/UserProvider';
 import {Usuario} from '../model/Usuario';
+import { ImageLibraryOptions, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 const requiredMessage = 'Campo obrigatório';
 
@@ -55,10 +56,13 @@ export default function PerfilTela({navigation}: any) {
     resolver: yupResolver(schema),
   });
   const [requisitando, setRequisitando] = useState(false);
+  const [atualizando, setAtualizando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
   const [dialogErroVisivel, setDialogErroVisivel] = useState(false);
   const [dialogExcluirVisivel, setDialogExcluirVisivel] = useState(false);
   const [mensagem, setMensagem] = useState({tipo: '', mensagem: ''});
   const {update, del} = useContext<any>(UserContext);
+  const [urlDevice, setUrlDevice] = useState<string | undefined>('');
   const userAuth = UserAuth();
 
   useEffect(() => {
@@ -67,21 +71,26 @@ export default function PerfilTela({navigation}: any) {
     register('perfil');
   }, [register]);
 
-  async function onSubmit(data: Usuario) {
+  async function atualizaPerfil(data: Usuario) {
     console.log('Atualizar perfil');
     setRequisitando(true);
-    const msg = await update(data);
+    setAtualizando(true);
+    data.urlFoto =
+      'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50';
+    const msg = await update(data, urlDevice);
     if (msg === 'ok') {
       setMensagem({
         tipo: 'ok',
-        mensagem: 'Perfil atualizado. Verifique seu e-mail para validar a conta.',
+        mensagem: 'Show! Seu perfil foi atualizado com sucesso.',
       });
       setDialogErroVisivel(true);
       setRequisitando(false);
+      setAtualizando(false);
     } else {
       setMensagem({tipo: 'erro', mensagem: msg});
       setDialogErroVisivel(true);
       setRequisitando(false);
+      setAtualizando(false);
     }
   }
 
@@ -92,6 +101,7 @@ export default function PerfilTela({navigation}: any) {
   async function excluirConta() {
     setDialogExcluirVisivel(false);
     setRequisitando(true);
+    setExcluindo(true);
     const msg = await del(userAuth.uid);
     if (msg === 'ok') {
       navigation.dispatch(
@@ -104,7 +114,44 @@ export default function PerfilTela({navigation}: any) {
       setMensagem({tipo: 'erro', mensagem: 'ops! algo deu errado'});
       setDialogErroVisivel(true);
       setRequisitando(false);
+      setExcluindo(false);
     }
+  }
+
+  const buscaNaGaleria = () => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+    };
+    launchImageLibrary(options, response => {
+      if (response.errorCode) {
+        setMensagem({tipo: 'erro', mensagem: 'Ops! Erro ao buscar a imagem.'});
+      } else if (response.didCancel) {
+        setMensagem({tipo: 'ok', mensagem: 'Ok, você cancelou.'});
+      } else {
+        const path = response.assets?.[0].uri;
+        console.log('buscaNaGaleria');
+        console.log(path);
+        setUrlDevice(path);
+      }
+    });
+  };
+
+  function tiraFoto() {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+    };
+    launchCamera(options, response => {
+      if (response.errorCode) {
+        setMensagem({tipo: 'erro', mensagem: 'Ops! Erro ao tirar a foto'});
+      } else if (response.didCancel) {
+        setMensagem({tipo: 'ok', mensagem: 'Ok, você cancelou.'});
+      } else {
+        const path = response.assets?.[0].uri;
+        console.log('tiraFoto');
+        console.log(path);
+        setUrlDevice(path);
+      }
+    });
   }
 
   return (
@@ -117,25 +164,28 @@ export default function PerfilTela({navigation}: any) {
         <>
           <Image
             style={styles.image}
-            source={require('../assets/images/imgview.png')}
+            source={
+              urlDevice !== ''
+                ? {uri: urlDevice}
+                : userAuth.urlFoto !== ''
+                ? {uri: userAuth.urlFoto}
+                : require('../assets/images/imgview.png')
+            }
+            loadingIndicatorSource={require('../assets/images/imgview.png')}
           />
           <View style={styles.divButtonsImage}>
             <Button
               style={styles.buttonImage}
               mode="outlined"
               icon="image"
-              onPress={() =>
-                Alert.alert('Vamos ver isso em upload de imagens')
-              }>
+              onPress={() => buscaNaGaleria()}>
               Galeria
             </Button>
             <Button
               style={styles.buttonImage}
               mode="outlined"
               icon="camera"
-              onPress={() =>
-                Alert.alert('Vamos ver isso em upload de imagens')
-              }>
+              onPress={() => tiraFoto()}>
               Foto
             </Button>
           </View>
@@ -216,10 +266,10 @@ export default function PerfilTela({navigation}: any) {
           <Button
             style={styles.button}
             mode="contained"
-            onPress={handleSubmit(onSubmit)}
+            onPress={handleSubmit(atualizaPerfil)}
             loading={requisitando}
             disabled={requisitando}>
-            {!requisitando ? 'Atualizar' : 'Atualizando'}
+            {!atualizando ? 'Atualizar' : 'Atualizando'}
           </Button>
           <Button
             style={styles.buttonOthers}
@@ -227,7 +277,7 @@ export default function PerfilTela({navigation}: any) {
             onPress={handleSubmit(avisarDaExclusaoPermanenteDaConta)}
             loading={requisitando}
             disabled={requisitando}>
-            {!requisitando ? 'Excluir' : 'Excluindo'}
+            {!excluindo ? 'Excluir' : 'Excluindo'}
           </Button>
         </>
       </ScrollView>

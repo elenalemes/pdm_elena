@@ -1,11 +1,47 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import {Text} from 'react-native-paper';
+import { View, StyleSheet } from 'react-native';
+import { Button, useTheme } from 'react-native-paper';
 
-export default function Home() {
+export default function Home({ navigation }: any) {
+  const theme = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.texto}>Tela Home</Text>
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('Menu')}
+        style={styles.button}
+      >
+        Voltar para o Menu
+      </Button>
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('CadastrarAluno')}
+        style={styles.button}
+      >
+        Cadastrar Aluno
+      </Button>
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('CadastrarTurma')}
+        style={styles.button}
+      >
+        Cadastrar Turma
+      </Button>
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('ListaAlunos')}
+        style={styles.button}
+      >
+        Ver Lista de Alunos
+      </Button>
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('ListaTurmas')}
+        style={styles.button}
+      >
+        Ver Lista de Turmas
+      </Button>
     </View>
   );
 }
@@ -15,11 +51,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderColor: 'red',
-    borderWidth: 1,
+    padding: 16,
+    backgroundColor: '#fff',
   },
-  texto: {
-    color: 'red',
-    fontSize: 30,
+  button: {
+    marginVertical: 10,
+    width: '80%',
   },
 });

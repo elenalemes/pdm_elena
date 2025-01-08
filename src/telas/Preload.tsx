@@ -13,6 +13,42 @@ export default function Preload({navigation}: any) {
   const [dialogVisivel, setDialogVisivel] = useState(false);
   const [mensagemErro] = useState('Você precisa verificar seu email para continuar');
 
+  async function logar() {
+    const credencial = await recuperaCredencialdaCache();
+    console.log('Credencial recuperada:', credencial);
+
+    if (credencial && credencial !== 'null') {
+      try {
+        const mensagem = await signIn(credencial);
+        console.log('Resultado do SignIn:', mensagem);
+
+        if (mensagem === 'ok') {
+          console.log('Login bem-sucedido');
+          await buscaUsuario();
+        } else {
+          console.log('Não foi possível fazer login na sua conta. Redirecionando.');
+          irParaSignIn();
+        }
+      } catch (error) {
+        console.error('Erro no SignIn:', error);
+        irParaSignIn();
+      }
+    } else {
+      console.log('Credencial inválida. Redirecionando para a página de login.');
+      irParaSignIn();
+    }
+  }
+
+  function irParaSignIn() {
+    setDialogVisivel(false);
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{name: 'SignIn'}],
+      }),
+    );
+  }
+
   useEffect(() => {
     const unsubscriber = auth().onAuthStateChanged(async authUser => {console.log('onAuthStateChanged:', authUser);
       console.log(authUser);
@@ -46,44 +82,10 @@ export default function Preload({navigation}: any) {
 
         }),
       );
-   // }
+      } else {
+        console.log('Usuário não encontrado.');
+        irParaSignIn();
   }
-
-          async function logar() {
-            const credencial = await recuperaCredencialdaCache();
-            console.log('Credencial recuperada:', credencial);
-
-            if (credencial && credencial !== 'null') {
-              try {
-                const mensagem = await signIn(credencial);
-                console.log('Resultado do SignIn:', mensagem);
-
-                if (mensagem === 'ok') {
-                  console.log('Login bem-sucedido');
-                  await buscaUsuario();
-                } else {
-                  console.log('Não foi possível fazer login na sua conta. Redirecionando.');
-                  irParaSignIn();
-                }
-              } catch (error) {
-                console.error('Erro no SignIn:', error);
-                irParaSignIn();
-              }
-            } else {
-              console.log('Credencial inválida. Redirecionando para a página de login.');
-              irParaSignIn();
-            }
-          }
-
-          function irParaSignIn() {
-            setDialogVisivel(false);
-            navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{name: 'SignIn'}],
-              }),
-            );
-          }
 
           return (
             <View style={styles.container}>
@@ -119,3 +121,4 @@ export default function Preload({navigation}: any) {
             textAlign: 'center',
           },
         });
+      }
