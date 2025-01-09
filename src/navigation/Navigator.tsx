@@ -50,19 +50,11 @@ const AppStack = () => {
         }}
       />
       <Tab.Screen
-        component={Menu}
+        component={Menu} //coloca um botão para a tela PerfilTela
         name="Menu do app"
         options={{
           tabBarLabel: 'Menu do app',
           tabBarIcon: () => <Icon source="house" color={theme.colors.primary} size={20} />,
-        }}
-      />
-      <Tab.Screen
-        component={PerfilTela}
-        name="Perfil do usuário"
-        options={{
-          tabBarLabel: 'Perfil do usuário',
-            tabBarIcon: () => <Icon source="account-edit" color={theme.colors.primary} size={20} />,
         }}
       />
     </Tab.Navigator>
@@ -79,7 +71,7 @@ export default function Navigator() {
         }
       />
       <Stack.Navigator
-        initialRouteName="AuthStack"
+        initialRouteName="AuthStack" //muda pra appstack para cair direto na tela de crud
         screenOptions={{
           headerShown: false,
         }}>

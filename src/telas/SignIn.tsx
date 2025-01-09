@@ -20,8 +20,7 @@ import {
   Divider,
   Text,
   TextInput,
-  withTheme,
-  useTheme
+  useTheme,
 } from 'react-native-paper';
 
 const requiredMessage = 'Campo obrigatório';
@@ -43,7 +42,8 @@ const schema = yup
   })
   .required();
 
-function SignIn({navigation}: any) {
+
+  export default function SignIn({navigation}: any) {
   const theme = useTheme();
   const {
     control,
@@ -76,6 +76,7 @@ function SignIn({navigation}: any) {
     register('email');
     register('senha');
   }, [register]);
+
 
   async function onSubmit(data: Credencial) {
     console.log(JSON.stringify(data));
@@ -208,8 +209,6 @@ function SignIn({navigation}: any) {
     </SafeAreaView>
   );
 }
-
-export default withTheme(SignIn);
 
 
 const styles = StyleSheet.create({
