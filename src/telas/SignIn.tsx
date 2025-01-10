@@ -1,9 +1,9 @@
-import {yupResolver} from '@hookform/resolvers/yup';
-import React, {useContext, useEffect, useState} from 'react';
-import {Controller, useForm} from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useContext, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import {AuthContext} from '../context/AuthProvider';
-import {Credencial} from '../model/types';
+import { AuthContext } from '../context/AuthProvider';
+import { Credencial } from '../model/types';
 import { CommonActions } from '@react-navigation/native';
 
 import {
@@ -37,19 +37,17 @@ const schema = yup
       .required(requiredMessage)
       .matches(
         /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[$*&@#])[0-9a-zA-Z$*&@#]{8,}$/,
-        'A senha deve conter ao menos uma letra maiúscula, uma letra minúscula, um númeral, um caractere especial e um total de 8 caracteres',
+        'A senha deve conter ao menos uma letra maiúscula, uma letra minúscula, um numeral, um caractere especial e um total de 8 caracteres',
       ),
   })
   .required();
 
-
-  export default function SignIn({navigation}: any) {
+export default function SignIn({ navigation }: any) {
   const theme = useTheme();
   const {
     control,
     handleSubmit,
-    register,
-    formState: {errors},
+    formState: { errors },
   } = useForm<any>({
     defaultValues: {
       email: '',
@@ -57,159 +55,138 @@ const schema = yup
     },
     mode: 'onSubmit',
     resolver: yupResolver(schema),
-
   });
 
   const [exibirSenha, setExibirSenha] = useState(true);
   const [logando, setLogando] = useState(false);
   const [dialogVisivel, setDialogVisivel] = useState(false);
   const [mensagemErro, setMensagemErro] = useState('');
-  const {signIn} = useContext<any>(AuthContext);
-
-  useEffect(() => {
-    if (dialogVisivel) {
-      setLogando(false);
-    }
-  }, [dialogVisivel]);
-
-  useEffect(() => {
-    register('email');
-    register('senha');
-  }, [register]);
-
+  const { signIn } = useContext<any>(AuthContext);
 
   async function onSubmit(data: Credencial) {
-    console.log(JSON.stringify(data));
+    console.log('Dados submetidos:', data);
     setLogando(true);
     const mensagem = await signIn(data);
     if (mensagem === 'ok') {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{name: 'AppStack'}],
+          routes: [{ name: 'AppStack' }],
         }),
       );
     } else {
       setMensagemErro(mensagem);
       setDialogVisivel(true);
     }
-}
+    setLogando(false);
+  }
 
   return (
     <SafeAreaView
       style={{
         ...styles.container,
         backgroundColor: theme.colors.background,
-      }}>
+      }}
+    >
       <ScrollView>
-        <>
-          <Image
-           style={styles.image}source={require('../assets/images/imgview.png')}
+        <Image
+          style={styles.image}
+          source={require('../assets/images/imgview.png')}
+        />
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={styles.textinput}
+              label="Email"
+              placeholder="Digite seu email"
+              mode="outlined"
+              autoCapitalize="none"
+              returnKeyType="next"
+              keyboardType="email-address"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              right={<TextInput.Icon icon="email" />}
             />
-          <Controller
-            control={control}
-            render={({field: {onChange, onBlur, value}}) => (
-              <TextInput
-                style={styles.textinput}
-                label="Email"
-                placeholder="Digite seu email"
-                mode="outlined"
-                autoCapitalize="none"
-                returnKeyType="next"
-                keyboardType="email-address"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                right={<TextInput.Icon icon="email" />}
-              />
-            )}
-            name="email"
-          />
-          {errors.email && (
-            <Text style={{...styles.textError, color: theme.colors.error}}>
-              Este campo é obrigatório.
-              {errors.email?.message?.toString()}
-            </Text>
           )}
-
-          <Controller
-            control={control}
-            rules={{
-              required: true,
-            }}
-            render={({field: {onChange, onBlur, value}}) => (
-              <TextInput
-                style={styles.textinput}
-                label="Senha"
-                placeholder="Digite sua senha"
-                mode="outlined"
-                autoCapitalize="none"
-                returnKeyType="go"
-                secureTextEntry={exibirSenha}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                right={
-                  <TextInput.Icon
-                    icon="eye"
-                    color={exibirSenha ? theme.colors.onBackground : theme.colors.error}
-                    onPress={() => setExibirSenha(previus => !previus)}
-                  />
-                }
-              />
-            )}
-            name="senha"
-          />
-          {errors.senha && (
-            <Text style={{...styles.textError, color: theme.colors.error}}>
-              Este campo é obrigatório.
-              {errors.senha?.message?.toString()}
-            </Text>
-          )}
-
-          <Text
-            style={{...styles.textEsqueceuSenha, color: theme.colors.tertiary}}
-            variant="labelMedium"
-            onPress={() => navigation.navigate('EsqueceuSenha')}>
-            Esqueceu sua senha?
+          name="email"
+        />
+        {errors.email && (
+          <Text style={{ ...styles.textError, color: theme.colors.error }}>
+            {errors.email?.message?.toString()}
           </Text>
+        )}
 
-          <Button
-            style={styles.button}
-            mode="contained"
-            onPress={handleSubmit(onSubmit)}
-            loading={logando}
-            disabled={logando}>
-            {!logando ? 'Entrar' : 'Entrando'}
-          </Button>
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={styles.textinput}
+              label="Senha"
+              placeholder="Digite sua senha"
+              mode="outlined"
+              autoCapitalize="none"
+              returnKeyType="go"
+              secureTextEntry={exibirSenha}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              right={
+                <TextInput.Icon
+                  icon={exibirSenha ? 'eye-off' : 'eye'}
+                  onPress={() => setExibirSenha((prev) => !prev)}
+                />
+              }
+            />
+          )}
+          name="senha"
+        />
+        {errors.senha && (
+          <Text style={{ ...styles.textError, color: theme.colors.error }}>
+            {errors.senha?.message?.toString()}
+          </Text>
+        )}
 
-          <Divider />
-          <View style={styles.divCadastro}>
-            <Text variant="labelMedium">Não tem uma conta?</Text>
-            <Text
-              style={{...styles.textCadastro, color: theme.colors.tertiary}}
-              variant="labelMedium"
-              onPress={() => navigation.navigate('SignUp')}>
-              {' '}
-              Cadastre-se.
-            </Text>
-          </View>
-        </>
+        <Text
+          style={{ ...styles.textEsqueceuSenha, color: theme.colors.tertiary }}
+          onPress={() => navigation.navigate('EsqueceuSenha')}
+        >
+          Esqueceu sua senha?
+        </Text>
+
+        <Button
+          style={styles.button}
+          mode="contained"
+          onPress={handleSubmit(onSubmit)}
+          loading={logando}
+          disabled={logando}
+        >
+          {!logando ? 'Entrar' : 'Entrando'}
+        </Button>
+
+        <Divider />
+        <View style={styles.divCadastro}>
+          <Text>Não tem uma conta?</Text>
+          <Text
+            style={{ ...styles.textCadastro, color: theme.colors.tertiary }}
+            onPress={() => navigation.navigate('SignUp')}
+          >
+            Cadastre-se.
+          </Text>
+        </View>
       </ScrollView>
 
       <Dialog visible={dialogVisivel} onDismiss={() => setDialogVisivel(false)}>
         <Dialog.Icon icon="alert-circle-outline" size={60} />
         <Dialog.Title style={styles.textDialog}>Erro</Dialog.Title>
         <Dialog.Content>
-          <Text style={styles.textDialog} variant="bodyLarge">
-            {mensagemErro}
-          </Text>
+          <Text style={styles.textDialog}>{mensagemErro}</Text>
         </Dialog.Content>
       </Dialog>
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -220,7 +197,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     alignSelf: 'center',
-    borderRadius: 200 / 2,
+    borderRadius: 100,
     marginTop: 100,
     marginBottom: 40,
   },
@@ -237,11 +214,12 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
   },
-  textCadastro: {},
-  textError: {
-    width: 350,
+  textCadastro: {
+    fontWeight: 'bold',
   },
-
+  textError: {
+    marginTop: 5,
+  },
   divCadastro: {
     marginTop: 20,
     flexDirection: 'row',

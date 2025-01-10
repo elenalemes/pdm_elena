@@ -27,11 +27,9 @@ export default function Preload({navigation}: any) {
           await buscaUsuario();
         } else {
           console.log('Não foi possível fazer login na sua conta. Redirecionando.');
-          irParaSignIn();
         }
       } catch (error) {
         console.error('Erro no SignIn:', error);
-        irParaSignIn();
       }
     } else {
       console.log('Credencial inválida. Redirecionando para a página de login.');
