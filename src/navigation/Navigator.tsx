@@ -43,7 +43,7 @@ const AppStack = () => {
       })}>
       <Tab.Screen
         component={Escolas}
-        name="Cadastro Escolas"
+        name="Escolas"
         options={{
           tabBarLabel: 'Professor',
           tabBarIcon: () => <Icon source="assistant-photo" color={theme.colors.primary} size={20} />,
@@ -75,10 +75,11 @@ export default function Navigator() {
         screenOptions={{
           headerShown: false,
         }}>
-        <Stack.Screen component={AuthStack} name="AuthStack" />
+        <Stack.Screen component={AuthStack} name="AuthStack"/>
         <Stack.Screen component={AppStack} name="AppStack" />
         <Stack.Screen component={EsqueceuSenha} name="AlterarSenha" />
         <Stack.Screen component={EscolaTela} name="EscolaTela" />
+        <Stack.Screen component={Escolas} name="Escolas" />
         <Stack.Screen component={PerfilTela} name="PerfilTela" />
       </Stack.Navigator>
     </NavigationContainer>

@@ -87,6 +87,8 @@ export const UserProvider = ({children}: any) => {
   async function getUser() {
     try {
       let doc = await firestore().collection('usuarios').doc(auth().currentUser?.uid).get();
+      console.log('buscou usuario');
+      console.log(doc);
       if (doc.exists) {
         const userData = doc.data();
         if (userData) {

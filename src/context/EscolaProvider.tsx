@@ -7,20 +7,23 @@ import {Escola} from '../model/Escola';
 export const EscolaContext = createContext({});
 
 export const EscolaProvider = ({children}: any) => {
-  const [escola, setEscolas] = useState<Escola[]>([]);
+  const [escolas, setEscolas] = useState<Escola[]>([]);
 
   useEffect(() => {
     const listener = firestore()
       .collection('escolas')
       .orderBy('nome')
       .onSnapshot(snapShot => {
+        console.log('getEscolaProvider');
+          console.log(snapShot);
+          console.log(snapShot.docs);
         if (snapShot) {
           let data: Escola[] = [];
           snapShot.forEach(doc => {
             data.push({
               uid: doc.id,
               nome: doc.data().nome,
-              tecnologias: doc.data().tecnologias,
+              categoria: doc.data().categoria,
               endereco: doc.data().endereco,
               latitude: doc.data().latitude,
               longitude: doc.data().longitude,
@@ -41,7 +44,7 @@ export const EscolaProvider = ({children}: any) => {
   ): Promise<string> => {
     try {
       if (escola.uid === '') {
-        escola.uid = firestore().collection('escola').doc().id;
+        escola.uid = firestore().collection('escolas').doc().id;
       }
       if (urlDevice !== '') {
         escola.urlFoto = await sendImageToStorage(escola, urlDevice);
@@ -52,7 +55,7 @@ export const EscolaProvider = ({children}: any) => {
       await firestore().collection('escolas').doc(escola.uid).set(
         {
           nome: escola.nome,
-          tecnologias: escola.tecnologias,
+          categoria: escola.categoria,
           endereco: escola.endereco,
           latitude: escola.latitude,
           longitude: escola.longitude,
@@ -77,12 +80,10 @@ export const EscolaProvider = ({children}: any) => {
       return 'Não foi possíve excluir a escola. Por favor, contate o suporte técnico.';
     }
   };
-  //urlDevice: qual imagem deve ser enviada via upload
   async function sendImageToStorage(
     escola: Escola,
     urlDevice: string,
   ): Promise<string> {
-    //1. Redimensiona e compacta a imagem
     let imageRedimencionada = await ImageResizer.createResizedImage(
       urlDevice,
       150,
@@ -90,24 +91,14 @@ export const EscolaProvider = ({children}: any) => {
       'PNG',
       80,
     );
-    //2. e prepara o path onde ela deve ser salva no storage
     const pathToStorage = `imagens/escolas/${escola?.uid}/fotoelena.png`;
-    //3. Envia para o storage
-    let url: string | null = ''; //local onde a imagem será salva no Storage
+    let url: string | null = '';
     const task = storage().ref(pathToStorage).putFile(imageRedimencionada?.uri);
     task.on('state_changed', taskSnapt => {
-      //Para acompanhar o upload, se necessário
-      // console.log(
-      //   'Transf:\n' +
-      //     `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-      // );
     });
-    //4. Busca a URL gerada pelo Storage
     await task.then(async () => {
-      //se a task finalizar com sucesso, busca a url
       url = await storage().ref(pathToStorage).getDownloadURL();
     });
-    //5. Pode dar zebra, então pega a exceção
     task.catch(e => {
       console.error('EscolaProvider, sendImageToStorage: ' + e);
       url = null;
@@ -115,7 +106,7 @@ export const EscolaProvider = ({children}: any) => {
     return url;
   }
   return (
-    <EscolaContext.Provider value={{escola, salvar, excluir}}>
+    <EscolaContext.Provider value={{escolas, salvar, excluir}}>
       {children}
     </EscolaContext.Provider>
   );

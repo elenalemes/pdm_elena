@@ -1,7 +1,7 @@
 export class Escola {
     public uid: string;
     public nome: string;
-    public tecnologias: string;
+    public categoria: string;
     public endereco: string;
     public latitude: number;
     public longitude: number;
@@ -9,7 +9,7 @@ export class Escola {
     constructor(
       uid: string,
       nome: string,
-      tecnologias: string,
+      categoria: string,
       endereco: string,
       latitude: number,
       longitude: number,
@@ -17,7 +17,7 @@ export class Escola {
     ) {
       this.uid = uid;
       this.nome = nome;
-      this.tecnologias = tecnologias;
+      this.categoria = categoria;
       this.endereco = endereco;
       this.latitude = latitude;
       this.longitude = longitude;

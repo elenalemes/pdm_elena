@@ -78,7 +78,7 @@ export default function SignIn({ navigation }: any) {
       setMensagemErro(mensagem);
       setDialogVisivel(true);
     }
-    setLogando(false);
+   setLogando(false);
   }
 
   return (

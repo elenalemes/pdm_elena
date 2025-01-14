@@ -4,6 +4,7 @@ import {AuthProvider} from '../context/AuthProvider';
 import Navigator from './Navigator';
 
 import {UserProvider} from '../context/UserProvider';
+import { EscolaProvider } from '../context/EscolaProvider';
 
 
 const themeLight = {
@@ -21,9 +22,11 @@ export default function Providers() {
   return (
     <AuthProvider>
     <UserProvider>
+      <EscolaProvider>
         <PaperProvider theme={temaDoApp ? themeLight : themeDark}>
          <Navigator/>
           </PaperProvider>
+      </EscolaProvider>
     </UserProvider>
   </AuthProvider>
   );

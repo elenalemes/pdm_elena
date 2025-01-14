@@ -1,49 +1,47 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Avatar, Card, FAB, List, useTheme} from 'react-native-paper';
 import {EscolaContext} from '../context/EscolaProvider';
 import {Escola} from '../model/Escola';
 
+
 export default function Escolas({navigation}: any) {
   const theme = useTheme();
   const {escolas} = useContext<any>(EscolaContext);
+  console.log('escolas');
+  console.log(escolas);
 
-  const irParaTelaEscola = (escola: Escola | null) => {
-    navigation.navigate('TelaEscola', {
+  const irParaEscolaTela = (escola: Escola | null) => {
+    console.log('irparaescola');
+    console.log(escola);
+    navigation.navigate('EscolaTela', {
       escola,
     });
   };
 
   return (
-    <View
-      style={{...styles.container, backgroundColor: theme.colors.background}}>
+    <View style={{...styles.container, backgroundColor: theme.colors.background}}>
       <List.Section
-        style={{...styles.list, backgroundColor: theme.colors.background}}>
-        <List.Subheader style={styles.subhearder}>
-          Lista de Escolas
-        </List.Subheader>
+      style={{...styles.list, backgroundColor: theme.colors.background}}>
+        <List.Subheader
+        style={styles.subhearder}>Lista de Escolas</List.Subheader>
         <ScrollView>
           {escolas.map((escola: Escola, key: number) => (
             <Card
               key={key}
               style={{...styles.card, borderColor: theme.colors.secondary}}
-              onPress={() => irParaTelaEscola(escola)}>
+              onPress={() => irParaEscolaTela(escola)}>
+
               <Card.Title
                 title={escola.nome}
-                subtitle={escola.tecnologias}
-                left={() => (
-                  <Avatar.Image size={40} source={{uri: escola.urlFoto}} />
-                )}
+                subtitle={escola.categoria}
+                left={() => <Avatar.Image size={40} source={{uri: escola.urlFoto}} />}
               />
             </Card>
           ))}
         </ScrollView>
       </List.Section>
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => irParaTelaEscola(null)}
-      />
+      <FAB icon="plus" style={styles.fab} onPress={() => irParaEscolaTela(null)} />
     </View>
   );
 }

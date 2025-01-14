@@ -18,14 +18,15 @@ const schema = yup.object().shape({
     .string()
     .required(requiredMessage)
     .min(2, 'O nome deve ter ao menos 2 caracteres'),
-  tecnologias: yup
+    categoria: yup
     .string()
     .required(requiredMessage)
-    .min(2, 'A tecnologia deve ter ao menos 2 caracteres'),
+    .min(2, 'A categoria deve ser: municipal, estadual, federal ou particular'),
 });
+
 export default function EscolaTela({route, navigation}: any) {
-  const [escola, setEscola] = useState<Escola | null>(route.params.escola);
   const theme = useTheme();
+  const [escola, setEscola] = useState<Escola | null>(route.params.escola);
   const {
     control,
     handleSubmit,
@@ -33,12 +34,13 @@ export default function EscolaTela({route, navigation}: any) {
   } = useForm<any>({
     defaultValues: {
       nome: escola?.nome,
-      tecnologias: escola?.tecnologias,
+      categoria: escola?.categoria,
       endereco: escola?.endereco,
     },
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   });
+
   const [requisitando, setRequisitando] = useState(false);
   const [urlDevice, setUrlDevice] = useState<string | undefined>('');
   const [atualizando, setAtualizando] = useState(false);
@@ -48,14 +50,15 @@ export default function EscolaTela({route, navigation}: any) {
   const {salvar, excluir} = useContext<any>(EscolaContext);
   const [excluindo, setExcluindo] = useState(false);
 
+ // console.log(route.params);
+
   async function atualizar(data: Escola) {
     data.uid = escola?.uid || '';
+    data.nome = escola?.nome || '';
+    data.categoria = escola?.categoria || '';
     data.urlFoto =
     escola?.urlFoto ||
       'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50';
-    data.endereco = escola?.endereco || '';
-    data.latitude = escola?.latitude || 0;
-    data.longitude = escola?.longitude || 0;
     setRequisitando(true);
     setAtualizando(true);
     const msg = await salvar(data, urlDevice);
@@ -185,7 +188,7 @@ export default function EscolaTela({route, navigation}: any) {
         render={({field: {onChange, onBlur, value}}) => (
           <TextInput
             style={styles.textinput}
-            label="Teconologias"
+            label="Categoria"
             placeholder="react, react native, expo"
             mode="outlined"
             autoCapitalize="words"
@@ -197,11 +200,11 @@ export default function EscolaTela({route, navigation}: any) {
             right={<TextInput.Icon icon="rocket-launch" />}
           />
         )}
-        name="tecnologias"
+        name="categoria"
       />
-      {errors.tecnologias && (
+      {errors.categoria && (
         <Text style={{...styles.textError, color: theme.colors.error}}>
-          {errors.tecnologias?.message?.toString()}
+          {errors.categoria?.message?.toString()}
         </Text>
       )}
       <Button
